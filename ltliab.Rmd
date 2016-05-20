@@ -1,0 +1,779 @@
+---
+title       : Bonds and Long-Term Notes
+subtitle    : 
+author      : Elizabeth Stanny
+job         : Professor, Sonoma State University
+framework   : io2012        # {io2012, html5slides, shower, dzslides, ...}
+highlighter : highlight.js  # {highlight.js, prettify, highlight}
+hitheme     : hemisu-light    # {tomorrow,hemisu-light}
+widgets     : [mathjax ,quiz, bootstrap]            # {mathjax, quiz, bootstrap}
+mode        : selfcontained # {standalone, draft}
+--- 
+
+
+## Bonds
+
+* **What** - promise to pay
+  *  A sum of money (face amount) at a designated maturity date
+  *  Periodic interest at a specified rate on the maturity amount (face value)
+  
+* **Why** - borrow for the long term when the amount of capital needed is too large for one lender to supply
+
+* **How** - issue
+  * Investment bank - firm or best efforts underwriting
+  * Private placement
+  
+
+---
+
+  
+## Long-term bond terminology
+
+* Interest rate in bond agreement (indenture):   **stated, coupon, nominal rate**
+* **Face value** **(fv)** :   par value, principal amount, maturity value
+* **Effective interest rate** (market rate) **(i)** :   rate of interest earned by bond holders
+* Par:  bond sells for face amount (stated rate $=$ effective interest rate)
+* **Discount**:   bond sells for less than face value (stated rate $\lt$ effective interest rate)
+* **Premium**:   bond sells for more than face value (stated rate $\gt$ effective interest rate)
+* **Interest payments (pmt)** :  stated rate $\times$ face
+
+
+--- &radio .quiz
+
+
+## Q: discount or premium
+
+For a bond issue that sells for less than its face value, the effective interest rate of interest is
+
+
+1.  _Higher than the rate stated on the bond_
+2.  Dependent on the rate stated on the bond
+3.  Equal to the rate stated on the bond
+4.  Less than the rate stated on the bond 
+
+*** .explanation
+
+get less (discount) because pay less (stated rate $\lt$ effective rate of interest for borrowings with similar risk profiles 
+
+---
+
+## Price of a bond
+
+```{r bondprice, cache=F, echo=F}
+suppressPackageStartupMessages(lubridate)
+pv <- function(i,n,pmt=0,fv=0) {
+  return(
+    (pmt/i)*(1-(1+i)^-n)
+    + fv*(1+i)^-n
+  )
+}
+issD  <- "2013-02-01"
+iss    <- ymd(issD)
+mat    <- iss + months(24)
+matD  <- paste(year(mat),month(mat),day(mat),sep="-")
+com      <-  2  # compounding per per
+n      <- (year(mat)-year(iss))*com
+face    <- 10000
+i       <- .05/com
+c         <- .04/com
+pmt      <- c*face
+price      <- round(pv(i,n,pmt,face),2)
+
+```
+
+
+On `r issD`, ABC issued `r c*2*100`% bonds, with a face amount of  `r format(face, nsmall=0)`. The bonds mature on `r matD`. The effective interest rate for similar bonds is `r i*com*100`%. Interest is paid semiannually on `r month(iss,label=T,abbr=T)`  and `r month(iss+months(6),label=T,abbr=T)` 1. XYZ acquired the bonds as a long-term investment.
+
+* Price = PV(`r i`, `r n`, `r -pmt`, `r format(-face, nsmall=0)`) = `r format(price, nsmall=2)` 
+    * Price = PV(rate,nper,pmt,[fv],[type])
+        * rate = effective rate / number of compounding periods per year = `r i*com` / `r com` = `r i`
+        * nper = number of years x number of compounding periods per year = `r year(mat)-year(iss)` x `r com` = `r n`
+        * pmt = - stated rate / number of compounding periods per year x face amount
+            * = -`r c*com` /`r com` x `r format(face, nsmall=0)` = -`r pmt`
+        * fv  =  `r format (-face, nsmall=0)`
+        * type = 0 ordinary annuity (payments at end of period)
+
+
+
+--- &radio .quiz
+
+## Q:  bond measurement
+
+The market price of a bond issued at a discount is the present value of its principal amount at the effective rate of interest
+
+1.   Less the present value of all future interest payments at the rate of interest stated on the bond
+2.   Plus the present value of all future interest payments at the rate of interest stated on the bond
+3.   _Plus the present value of all future interest payments at the effective rate of interest_
+4.   Less the present value of all future interest payments at the market effective rate of interest
+
+
+
+--- &radio .quiz
+
+```{r  bondprice3, cache=F, echo=F}
+set.seed(1)
+issD <- "2013-04-01"
+iss <- ymd("2013-04-01")
+mat    <- iss + months(60)
+matD  <- paste(year(mat),month(mat),day(mat),sep="-")
+com      <-  2  # compounding per per
+n      <- (year(mat)-year(iss))*com
+face    <- 1000
+i       <- .04/com
+c         <- .06/com
+pmt      <- c*face
+price      <- round(pv(i,n,pmt,face),2)
+ans   <- price
+ans1  <-  price + 10
+ans2  <- price - 10 
+ans3  <- price + 5 
+
+```
+## Q: bond price
+
+
+On `r issD`, ABC issued `r c*2*100`% bonds, with a face amount of `r face`. The bonds mature on `r matD` . Yield  is `r i*com*100`%. Interest is paid semiannually on `r month(iss,label=T,abbr=T)` and `r month(iss+months(6),label=T,abbr=T)` 1. The issuance price for the bonds is: 
+
+1.  `r ans1`
+2.  `r ans2`
+3.  `r ans3`
+4.  _`r ans`_
+
+
+*** .explanation
+
+Price = PV(`r i`,`r n`,`r -pmt`,`r -face`)=`r price` 
+
+
+---
+
+## Bond issued at a discount
+
+Issue of 800 at 97 (97 percent of par)
+
+
+</br>
+
+**Issuance**               |                                                  | DR              |  CR 
+---------------------------|--------------------------------------------------|-----------------|-----------
+                           |  Cash         (800 x .97)                        |     776         |         
+                           |  Discount on Bond payable (xl) (800 - 76)        |      24         |
+                           |  Bond payable                                    |                 |   800         
+**AMORTIZE BOND DISCOUNT** |                                                  |                 |            
+                           |  Interest expense                                |         x       |               
+                           |  Discount on Bond payable (xl)                   |                 |   x
+                           
+</br></br>
+
+
+--- 
+
+## Bond issued at a premium 
+
+Issue of 800 at 101 (101 percent of par)
+
+</br>
+
+ **Issuance**              |                                             | DR              |  CR 
+---------------------------|---------------------------------------------|-----------------|--------------
+                           | Cash          (800 x 1.01)                  |    808          |         
+                           | Premium on Bond payable (l) (808 - 800))    |                 |     8
+                           | Bond payable                                |                 |   800         
+                           |                                             |                 |            
+**AMORTIZE BOND PREMIUM**  |                                             |                 |
+                           | Premium on Bond payable (l)                 |       x         |   
+                           | Interest expense                            |                 |   x            
+
+---
+
+## Ex: Disney bond
+
+*  Coupon (stated rate) = 4.5% 
+*  Interest payment (semi-annual) for 1000 par = $\frac{.045}{2}\times1000=22.5$
+    *  Price to buy is 102.434.  Cost 1000 bond $=1000\times102.434=1024.34$
+*  Is bond selling for a discount of a premium?
+     
+<img src='bond.png' height='60%' class='center' />
+
+--- 
+
+```{r  bondprice2,  cache=F, echo=F}
+set.seed(1)
+issD <- "2013-02-01"
+iss <- ymd("2013-02-01")
+iss6 <- iss + months(6)
+issD6 <- paste(year(iss6),month(iss6),day(iss6),sep="-")    
+iss12 <- iss + months(12)
+issD12 <- paste(year(iss12),month(iss12),day(iss12),sep="-")    
+iss18 <- iss + months(18)
+issD18 <- paste(year(iss18),month(iss18),day(iss18),sep="-")    
+iss24 <- iss + months(24)
+issD24 <- paste(year(iss24),month(iss24),day(iss24),sep="-")    
+eoy1D <- "2013-12-31"
+eoy1 <- ymd("2013-12-31")
+eoym    <- month(eoy1)-month(iss)+1  #months until end of year
+eoyc    <- (eoym>=(12/com))*(eoym-(12/com))+(eoym<(12/com))*eoym  #months since last coupon until accrual
+mat     <- iss + months(24)
+matD  <- paste(year(mat),month(mat),day(mat),sep="-")
+com     <-  2  # compounding per per
+n       <- (year(mat)-year(iss))*com
+face    <- 10000
+i       <- .05/com
+c       <- .04/com
+pmt     <- c*face
+price   <- round(pv(i,n,pmt,face),2)
+bal0    <- price
+bal1    <- round(bal0+bal0*i-pmt,2)
+bal2    <- round(bal1+bal1*i-pmt,2)
+bal3    <- round(bal2+bal2*i-pmt,2)
+bal4    <- round(bal3+bal3*i-pmt,2)
+```      
+
+## Amortization schedule- effective method
+
+On `r issD`, ABC issued `r c*2*100`% bonds, with a face amount of  `r format(face, nsmall=0)`. Bonds mature on `r matD`. Effective yield for the bonds is `r i*2*100`%. Interest is paid semiannually on `r month(iss,label=T,abbr=T)`  and `r month(iss+months(6),label=T,abbr=T)` 1. 
+
+
+   Date (t)         | a: Int Exp                | b: Payment   |    c: Diff (a-b)             |    d: Bal=CV 
+--------------------|---------------------------|--------------|------------------------------|-----------------
+`r issD`            |                           |              |                              |    `r bal0`
+`r issD6`            |   `r round(bal0*i,2)`     |   `r pmt`    |     `r round(bal0*i-pmt,2)`  |    `r bal1`   
+`r issD12`           |   `r round(bal1*i,2)`     |   `r pmt`    |     `r round(bal1*i-pmt,2)`  |    `r bal2`
+`r issD18`          |   `r round(bal2*i,2)`     |   `r pmt`    |     `r round(bal2*i-pmt,2)`  |    `r bal3`
+`r issD24`          |   `r round(bal3*i,2)`     |   `r pmt`    |     `r round(bal3*i-pmt,2)`  |  `r format(bal4, nsmall=0)` 
+
+
+</br>
+
+- A = $`r bal0`\times \frac{`r i*2`}{2}= `r round(bal0*i,2)`$ 
+- B = $`r format(face, nsmall=0)`\times\frac{`r c*2`}{2}=`r pmt`$
+- D = $\text{Bal}_{t-1}+ \text{Diff}=`r bal0`+`r round(bal0*i-pmt,2)`=`r round(bal1,2)`$
+
+
+
+--- 
+
+
+##  JE effective interest rate method: ABC issuer
+
+</br>
+
+Issuance: `r issD`                      |                                     | DR                    |  CR 
+----------------------------------------|-------------------------------------------------|-----------------------|-------------
+                                        | Cash                                            |    `r bal0`           |         
+                                        | Discount on Bond payable (xl) (=face-price)     |  `r face-bal0`        |   
+                                        | Bond payable                                    |                       | `r format(face, nsmall=0)`
+ **INTEREST PAYMENT `r issD6`**         |                                                 |                       |            
+                                        | Interest expense                                |  `r round(bal0*i,2)`  |
+                                        | Cash                                            |                       |    `r pmt`
+                                        | Discount on Bond payable (xl)                   |                       |   `r round(bal0*i-pmt,2)`
+                                        
+</br></br>
+
+
+--- 
+
+##  JE effective interest rate method: ABC issuer
+
+```{r  jeiss,  cache=F, echo=F}
+expeoy1     <- round(bal1*i*eoyc/6,2)
+pmteoy1     <- round(pmt*eoyc/6,2)
+diseoy1     <- round((bal1*i-pmt)*eoyc/6,2)
+expboy2     <- round(bal1*i -expeoy1,2)
+pmtboy2     <- round(pmt -pmteoy1,2)
+disboy2     <- round(bal1*i-pmt-diseoy1,2)
+
+```
+
+EOY interest accrual: `r eoy1D`          |                                         | DR                |  CR 
+-----------------------------------------|-----------------------------------------|-------------------|-------------------
+                                         |  Interest expense                       | `r expeoy1` (a)   |
+                                         |  Interest payable                       |                   |   `r pmteoy1`(b)
+                                         |  Discount on Bond payable (xl)          |                   |   `r diseoy1` (c)
+**INTEREST PAYMENT `r issD12`**          |                                         |                   |  
+                                         |  Interest payable                       |  `r pmteoy1`      | 
+                                         |  Interest expense                       |  `r expboy2`      |
+                                         |  Cash                                   |                   |   `r round(pmt,2)`
+                                         |  Discount on Bond payable (xl)          |                   |   `r disboy2`
+                                         
+</br>
+- (a) $`r expeoy1`= `r bal1*i`\times \frac{`r eoyc`}{6}$ 
+- (b) $`r pmteoy1`=`r pmt`\times \frac{`r eoyc`}{6}$ 
+- (c) $`r diseoy1`=`r (bal1*i-pmt)`\times \frac{`r eoyc`}{6}$
+
+
+--- 
+
+
+## JE effective interest rate method: XYZ investor 
+
+* Assume investor has intent and ability to hold to maturity.  Investment accounted for using amortized cost method
+
+</br>
+
+Issuance: `r issD`                      |                                        | DR                     |  CR 
+----------------------------------------|----------------------------------------|------------------------|-----------------------
+                                        | Bond receivable  (a)                   |`r format(face, nsmall=2)`|            
+                                        | Cash                                   |                        |    `r bal0`     
+                                        | Discount on bond receivable (xa)       |                        |   `r face-bal0`
+**INTEREST RECEIVED `r issD6`**         |                                        |                        |            
+                                        | Interest revenue                       |                        |   `r round(bal0*i,2)`
+                                        | Cash                                   |  `r pmt`               |   
+                                        | Discount on Bond payable (xa)          | `r round(bal0*i-pmt,2)`|  
+  
+
+--- 
+
+## JE effective interest rate method: XYZ investor 
+
+</br></br>
+
+EOY interest accrual: `r eoy1D`         |                                       | DR                |  CR 
+----------------------------------------|---------------------------------------|-------------------|-----------------
+                                        |  Interest revenue                     |                   |    `r expeoy1`
+                                        |  Interest receivable (a)              | `r pmteoy1`       |   
+                                        |  Discount on bond receivable (xa)     | `r diseoy1`       |   
+**INTEREST REVENUE `r issD12`**         |                                       |                   |  
+                                        |  Interest receivable                  |                   |  `r pmteoy1`       
+                                        |  Interest revenue                     |                   |  `r expboy2`
+                                        |  Cash                                 | `r round(pmt,2)`  |   
+                                        |  Discount on bond receivable (xa)     | `r disboy2`       |   
+                                        
+</br></br>
+
+
+---
+
+
+```{r  amortsl, cache=F, echo=F}
+set.seed(1)
+issD <- "2013-02-01"
+iss <- ymd("2013-02-01")
+iss6 <- iss + months(6)
+issD6 <- paste(year(iss6),month(iss6),day(iss6),sep="-")    
+iss12 <- iss + months(12)
+issD12 <- paste(year(iss12),month(iss12),day(iss12),sep="-")    
+iss18 <- iss + months(18)
+issD18 <- paste(year(iss18),month(iss18),day(iss18),sep="-")    
+iss24 <- iss + months(24)
+issD24 <- paste(year(iss24),month(iss24),day(iss24),sep="-")    
+eoy1D <- "2013-12-31"
+eoy1 <- ymd("2013-12-31")
+eoym    <- month(eoy1)-month(iss)+1  #months until end of year
+eoyc    <- (eoym>=(12/com))*(eoym-(12/com))+(eoym<(12/com))*eoym  #months since last coupon until accrual
+mat     <- iss + months(24)
+matD    <- paste(year(mat),month(mat),day(mat),sep="-") 
+com     <-  2  # compounding per per
+n       <- (year(mat)-year(iss))*com
+face    <- 10000
+i       <- .05/com
+c       <- .04/com
+pmt     <- c*face
+price   <- round(pv(i,n,pmt,face),2)
+dis     <- face-price
+amtsl   <- dis/n
+exp     <- amtsl+pmt
+bal0    <- price
+bal1    <- bal0+amtsl
+bal2    <- bal1+amtsl
+bal3    <- bal2+amtsl
+bal4    <- bal3+amtsl
+```      
+
+
+
+## Amortization schedule- straight line method
+
+On `r issD`, ABC issued `r c*2*100`% bonds, with a face amount of  `r format(face, nsmall=0)`. Bonds mature on `r matD`. Market yield for bonds is `r 2*i*100`%. Interest is paid semiannually on `r month(iss,label=T,abbr=T)`  and `r month(iss+months(6),label=T,abbr=T)` 1. 
+
+
+   Date (t)         | a: Payment   |    b: Diff              | c: Int Exp (a+b)   |    d: Bal=CV 
+--------------------|--------------|-------------------------|--------------------|----------------------
+`r issD`            |              |                         |                    |  `r format(bal0, nsmall=0)` 
+`r issD6`            |   `r pmt`    |     `r round(amtsl,2)`  |   `r round(exp,2)` |  `r format(bal1, nsmall=0)`    
+`r issD12`          |   `r pmt`    |     `r round(amtsl,2)`  |   `r round(exp,2)` |  `r format(bal2, nsmall=0)` 
+`r issD18`          |   `r pmt`    |     `r round(amtsl,2)`  |   `r round(exp,2)` |  `r format(bal3, nsmall=0)` 
+`r issD24`         |   `r pmt`    |     `r round(amtsl,2)`  |   `r round(exp,2)` |  `r format(bal4, nsmall=0)`   
+
+</br>
+
+- A  = $`r format(face, nsmall=0)`\times\frac{`r c*2`}{2}$ =`r pmt`
+- B  = $\frac{ `r format(face, nsmall=0)`-`r price`}{`r n`}$ =`r round(amtsl,2)` 
+- D  = $\text{Bal}_{t-1}+\text{Diff}$
+
+
+---
+
+##  JE straight line method: ABC issuer
+
+</br></br>
+
+ Issuance: `r issD`                    |                                                 | DR                    |  CR 
+---------------------------------------|-------------------------------------------------|-----------------------|-----------------------
+                                       | Cash                                            |    `r bal0`           |         
+                                       | Discount on Bond payable (xl)                   |  `r face-bal0`        |   
+                                       | Bond payable                                    |                       | `r format(face, nsmall=0)`
+**INTEREST PAYMENT `r issD6`**         |                                                 |                       |            
+                                       | Interest expense                                |  `r round(exp,2)`     |
+                                       | Cash                                            |                       |    `r pmt`
+                                       | Discount on Bond payable (xl)                   |                       |   `r round(amtsl,2)`
+  
+</br></br>
+
+
+---
+
+
+##  JE straight line method: ABC issuer
+
+```{r  jesliss,  cache=F, echo=F}
+expeoy1     <- round(exp*eoyc/6,2)
+pmteoy1     <- round(pmt*eoyc/6,2)
+diseoy1     <- round(amtsl*eoyc/6,2)
+expboy2     <- round(exp -expeoy1,2)
+pmtboy2     <- round(pmt -pmteoy1,2)
+disboy2     <- round(amtsl-diseoy1,2)
+
+```
+
+     EOY interest accrual: `r eoy1D`      |                                    | DR                |  CR 
+-----------------------------------------|------------------------------------|-------------------|-------------------
+                                         |  Interest expense                  | `r expeoy1` (a)   |
+                                         |  Interest payable                  |                   |   `r pmteoy1`(b)
+                                         |  Discount on Bond payable (xl)     |                   |   `r diseoy1` (c)
+**INTEREST PAYMENT `r issD12`**          |                                    |                   |  
+                                         |  Interest payable                  |  `r pmteoy1`      | 
+                                         |  Interest expense                  |  `r expboy2`      |
+                                         |  Cash                              |                   |   `r round(pmt,2)`
+                                         |  Discount on Bond payable (xl)     |                   |   `r disboy2`
+                                    
+</br>
+- (a) $`r expeoy1`= `r round(exp,2)`\times \frac{`r eoyc`}{6}$
+- (b) $`r pmteoy1` = `r pmt`\times \frac{`r eoyc`}{6}$
+- (c) $`r diseoy1`=`r round(amtsl,2)`\times \frac{`r eoyc`}{6}$
+
+
+--- 
+
+## Borrowing issuance costs
+
+* U.S. GAAP and IFRS
+  * Reduce recorded amount of the debt by the debt issuance costs 
+  * Lower (net) amount is borrowed at the same cost, increasing the effective interest rate
+
+
+
+
+--- &radio .quiz
+
+## Q: issuance costs
+
+When bonds and other debt securities are issued, payments such as legal costs, printing costs, and underwriting fees, are referred to as debt issuance costs.
+
+1. the recorded amount of the debt is increased by the transaction costs
+2. the decrease in the effective interest rate caused by the transaction costs is reflected in the interest expense
+3. the transaction costs are recorded separately as an asset
+4. _the increase in the effective interest rate caused by the transaction costs is reflected in the interest expense_
+
+
+---
+
+
+## Extinguishment of debt
+
+* Net carrying value (CV)= face + unamortized premium- unamortized discount - unamortized issue costs
+  * Consideration given $\lt$ CV $\rightarrow$ gain
+  * Consideration given $\gt$ CV $\rightarrow$ loss
+  
+
+--- &radio .quiz
+
+```{r  ext, cache=F, echo=F}
+set.seed(1)
+transD <- "2013-06-30"
+trans  <-  ymd("2013-06-30")
+mat    <-  trans + years(6)
+matD    <- paste(year(mat),month(mat),day(mat),sep="-") 
+date2   <- trans+months(6)
+date2D  <- paste(year(date2),month(date2),day(date2),sep="-") 
+face   <-  10000
+unamt  <-  sample(seq(.01,.03,by=.001),2)*face  #one discount, one bond issuance costs
+price  <-  sample(96:103,1) #percent of par
+coup   <-  sample(4:8,1)
+ans   <-   -round(price/100*face-(face-unamt[1]-unamt[2]),2)
+ans1 <- ans - 10
+ans2 <- ans - 20
+ans3 <- ans - 30
+
+```
+
+## Gain/loss extinguishment debt
+
+
+On `r transD`, ABC Co. had outstanding `r coup`%,   `r format(face, nsmall=0)` face value bonds maturing on `r matD`. Interest was payable semiannually every `r month(trans,label=T,abbr=T)` 30 and `r month(date2,label=T,abbr=T)` 31. On `r transD`, after amortization was recorded for the period, the unamortized bond discount and bond issuance costs were `r unamt[1]` and `r unamt[2]`, respectively. On that date, ABC acquired all its outstanding bonds on the open market at `r price` percent of par (face) and retired them. On `r transD` ABC should recognize the following as gain/(loss) before income taxes on redemption of bonds:
+
+1.  `r ans1`
+4.  _`r ans`_
+2.  `r ans2`
+3.  `r ans3`
+
+
+*** .explanation
+
+gain/(loss) = CV - consideration given 
+- = (`r format(face, nsmall=0)`-`r unamt[1]`-`r unamt[2]`) - `r price/100` x  `r format(face, nsmall=0)`
+
+--- 
+
+
+## US vs. IFRS: convertible debt at issuance
+
+*  **US** the entire issue price is recorded as debt
+*  **IFRS** convertible debt is divided into its liability and equity elements
+   *  Paid-in capital for the portion of the proceeds attributable to the conversion feature and liability for the balance
+
+
+--- &radio .quiz
+
+## Q: convertible debt IFRS
+
+On May 1, 2013, ABC issued 10-year convertible bonds at 103. During 2015, the bonds were converted into common stock. ABC prepares its financial statements according to IFRS. On May 1, 2013, cash proceeds from the issuance of the convertible bonds should be reported as
+
+1. A liability for the entire proceeds
+2.  Paid-in capital for the entire proceeds
+3. _Paid-in capital for the portion of the proceeds attributable to the conversion feature and as a liability for the balance_
+4.  A liability for the face amount of the bonds and paid-in capital for the premium over the par value
+
+*** .explanation
+
+Under US GAAP, the entire issue price is recorded as debt. Under IFRS, convertible debt is divided into its liability and equity elements.
+
+
+
+
+--- 
+
+```{r  conv2, cache=F, echo=F}
+set.seed(1)
+trans   <-  ymd("2013-06-30")
+mat     <-  trans + years(6)
+matD    <- paste(year(mat),month(mat),day(mat),sep="-") 
+date2   <- trans+month(6)
+date2D  <- paste(year(date2),month(date2),day(date2),sep="-") 
+facepb    <-  1000
+nbonds  <-  8 
+face   <-  facepb*nbonds
+bprice  <-  sample(96:99,1) #percent of par
+conv    <-  150  # shares for each 1000 bond
+sprice  <-  6
+procb   <- face*bprice/100 
+procs   <- conv*nbonds*sprice
+dis     <- face-procb 
+unamt   <- dis*sample(seq(.2,.6,by=.1),1)
+glconv   <- face-unamt-procs
+```
+
+## Convertible debt
+
+* Two methods to record conversion
+  * Book value method
+  * Market value method
+
+---   
+
+## Conversion debt - book value method
+
+* No gain or loss
+* Plug for common stock
+
+</br></br>
+
+ Issuance `r nbonds` `r facepb` at `r bprice`        |                                                           | DR               |  CR 
+----------------------------------------------------|-----------------------------------------------------------|------------------|------------------
+                                                    |  Cash  $`r nbonds`\times `r facepb`\times`r bprice`$      |  `r procb`       |
+                                                    |  Discount on bond payable (xl)                            |    `r dis`       |
+                                                    |  Convertible bond payable                                 |                  |   `r face`         
+**CONVERSION (UNAMORTIZED DISCOUNT IS `r unamt`)**  |                                                           |                  |
+                                                    | Convertible bond payable                                  |    `r face`      | 
+                                                    | Discount on bond payable (xl)                             |                  |   `r unamt`     
+                                                    |   Common stock (plug)                                     |                  |   `r face-unamt`                                                 
+                                                    
+</br></br>
+
+
+
+---   
+
+## Conversion debt - market value method
+
+* Unamortized discount `r unamt`
+* Stock price `r sprice`
+* Conversion rate `r conv` shares for each `r facepb` bond
+
+
+Issuance `r nbonds` `r facepb` at `r bprice`        |                                                                                     |   DR             |  CR 
+----------------------------------------------------|-------------------------------------------------------------------------------------|------------------|---------------
+                                                    |  Cash  $`r nbonds`\times `r facepb`\times`r bprice`$                                |  `r procb`       |
+                                                    |  Discount on bond payable (xl)                                                      |    `r dis`       |
+                                                    |  Convertible bond payable                                                           |                  |   `r face`         
+**CONVERSION (UNAMT DIS = `r unamt`)**              |                                                                                     |                  |
+                                                    |  Convertible bond payable                                                           |     `r face`     |  
+                                                    |  Discount on bond payable (xl)                                                      |                  |   `r unamt`
+                                                    |  Common stock (no of share/bond $\times$ number of bonds $\times$ stock price)      |                  |  `r procs`
+                                                    |  Gain/loss on conversion   (plug)                                                   |                  |  `r glconv`
+
+
+--- &radio .quiz
+```{r  convq, cache=F, echo=F}
+set.seed(1)
+iss   <-  ymd(issD)
+mat     <- iss + years(sample(5:10,1))
+matD    <- paste(year(mat),month(mat),day(mat),sep="-") 
+date2   <- iss+months(6)
+date2D  <- paste(year(date2),month(date2),day(date2),sep="-") 
+facepb    <-  1000
+nbonds  <-  sample(5:10,1)
+face   <-  facepb*nbonds
+bprice  <-  sample(95:99,1) #percent of par
+conv    <-  sample(50:80,1)  # shares for each 1000 bond
+sprice  <-  sample(15:25,1)
+procb   <- face*bprice/100 
+procs   <- conv*nbonds*sprice
+dis     <- face-procb 
+unamt   <- dis*sample(seq(.2,.6,by=.1),1)
+glconv   <- face-unamt-procs
+c      <- sample(4:8,1)
+ans   <- glconv
+ans1  <- face-procs
+ans2  <- face-unamt
+ans3  <- procs-face
+
+```
+
+
+
+## Q:  conversion market value method
+
+On, `r issD`, ABC Corp. had outstanding `r c`%, `r face` face amount, convertible bonds maturing on `r matD`. 
+Interest is payable on `r month(iss,label=T,abbr=T)` and `r month(iss+months(6),label=T,abbr=T)`. On `r issD`, all these bonds were converted into `r conv` shares per `r facepb` face amount of bond.  The stock price on `r issD` was `r sprice`. On the date of conversion: Unamortized bond discount was `r unamt`. The amount of gain/(loss) that should be recognized from the conversion using the market value method is: 
+
+  1.   0
+  2.  `r ans2`
+  3.  `r ans3`
+  4.  _`r ans`_
+
+
+*** .explanation
+
+- (face- unamortized discount) - proceeds cs 
+    - proceeds cs = conv x nbonds x stock price  
+- `r glconv` = (`r face` - `r unamt`) - `r conv` x `r nbonds` x `r sprice`
+
+
+--- &radio .quiz
+
+
+## Q:  conversion book value method
+
+On, `r issD`, ABC Corp. had outstanding `r c`%, `r face` face amount, convertible bonds maturing on `r matD`. 
+Interest is payable on `r month(iss,label=T,abbr=T)` and `r month(iss+months(6),label=T,abbr=T)`. On `r issD`, all these bonds were converted into `r conv` shares per `r facepb` face amount of bond.  The stock price on `r issD` was `r sprice`. On the date of conversion: Unamortized bond discount was `r unamt`. The amount of gain/(loss) that should be recognized from the conversion using the book value method is: 
+
+  1.   _0_
+  2.  `r ans2`
+  3.  `r ans3`
+  4.  `r ans`
+
+
+*** .explanation
+
+book value method, no gain or loss is recognized
+
+--- 
+
+## Bonds with detachable warrants to buy stock
+
+* Separate FV of bonds and warrants using relative market value approach
+
+</br></br>
+
+                                           | DR                              |  CR 
+-------------------------------------------|---------------------------------|--------------------------------
+  Cash                                     |       x                         | 
+   Bonds payable (net)                     |                                 |     x
+   Equity - stock warrants                 |                                 |     x
+
+</br></br>
+
+
+--- &radio .quiz
+
+```{r  conv, cache=F, echo=F}
+set.seed(1)
+transD  <-  "2013-06-30"
+trans   <-  ymd("2013-06-30")
+mat     <-  trans + years(6)
+matD    <- paste(year(mat),month(mat),day(mat),sep="-") 
+date2   <- trans+months(6)
+date2D  <- paste(year(date2),month(date2),day(date2),sep="-") 
+facepb  <-  1000
+mvbonds <- sample(seq(.8,.95,by=.01),1)*facepb #mv bonds without warrnats
+nbonds  <-  20
+face    <-  facepb*nbonds
+mvissue <- facepb*nbonds*sample(seq(1.05,1.16, by=.001),1) #mv entire irres
+conv    <-  100 # shares for each 1000 bond
+mvw     <- sample(2:4,1)
+totmv   <-  mvw*conv+ mvbonds
+relmvb  <-  mvbonds/totmv
+relmvw  <-  mvw*conv/totmv
+shbonds <- round(relmvb*mvissue,2)
+shwarr  <-  round(relmvw*mvissue,2)
+```
+
+## Q: detachable warrants
+
+ABC issued bonds with a face amount of  `r format(face, nsmall=0)`. Each `r facepb` bond contained detachable stock warrants for `r conv` shares of ABC's common stock. Total proceeds from the issue amounted to  `r format(mvissue, nsmall=0)`. The market value of each warrant was `r mvw`, and the market value of each bonds without the warrants was `r mvbonds`.  Value allocated to bonds and to warrant:
+
+1.   _`r format(shbonds, nsmall=2)` and `r shwarr`_
+2.  `r format(shbonds-50, nsmall=2)` and `r shwarr+50`
+3.  `r format(shbonds+35, nsmall=2)` and `r shwarr-35`
+4.  `r format(shbonds+50, nsmall=2)` and `r shwarr-50`
+
+*** .explanation
+
+- bonds = $\frac{`r mvbonds`}{`r mvbonds`+`r mvw*conv`}$ x `r format(mvissue, nsmall=2)` 
+   - = `r round(mvbonds/(mvbonds+mvw*conv)*mvissue,2)`
+- warrants = $\frac{`r mvw*conv`}{`r mvbonds`+`r mvw*conv`}$ x `r format(mvissue, nsmall=2)` 
+   - = `r round(mvw*conv/(mvbonds+mvw*conv)*mvissue,2)`
+
+
+---
+
+## Disclosure
+
+*  Fair value
+*  Interest rates
+*  Maturity dates
+*  Call provisions
+*  Conversion options
+*  Restrictions imposed by creditors
+*  Assets pledged as collateral
+
+---
+
+
+## Elect FV option for financial liabilities
+
+* Report changes in fair value in the income statement
+  * FV =500
+  * CV =400
+  * adjustment =100
+  
+</br></br>
+
+                                           | DR                              |  CR 
+-------------------------------------------|---------------------------------|--------------------------------
+  Unrealized holding loss                  |     100                         | 
+  Fair value adjustment bond payable (l)   |                                 |   100  
+
+</br></br>
+
